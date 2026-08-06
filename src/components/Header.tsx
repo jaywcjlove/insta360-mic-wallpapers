@@ -4,7 +4,6 @@ type Props = {
   onCategory: (id: string) => void
   categories: readonly { id: string; label: string }[]
   onOpenGuide: () => void
-  onResetView: () => void
 }
 
 export function Header({
@@ -13,7 +12,6 @@ export function Header({
   onCategory,
   categories,
   onOpenGuide,
-  onResetView,
 }: Props) {
   return (
     <header className="topbar">
@@ -44,9 +42,6 @@ export function Header({
       </nav>
 
       <div className="topbar-actions">
-        <button type="button" className="btn btn-ghost btn-sm" onClick={onResetView}>
-          重置视图
-        </button>
         <button type="button" className="btn btn-primary btn-sm" onClick={onOpenGuide}>
           设计指南
         </button>

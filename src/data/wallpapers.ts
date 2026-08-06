@@ -1,70 +1,114 @@
-import catalog from './wallpapers.json'
+import catalog from 'virtual:wallpapers'
 
 export type Wallpaper = {
   id: string
   title: string
   category: string
-  colors: string[]
   file: string
   width: number
   height: number
 }
 
+/** One placed instance on the infinite grid (uniform size). */
 export type WallpaperItem = Wallpaper & {
+  key: string
+  col: number
+  row: number
   x: number
   y: number
-  scale: number
-  rotation: number
 }
 
-export const CATEGORIES = [
-  { id: 'all', label: '全部' },
-  { id: 'icon', label: '图标' },
-  { id: 'pattern', label: '图案' },
-  { id: 'label', label: '标签' },
-  { id: 'solid', label: '纯色' },
-  { id: 'minimal', label: '极简' },
-] as const
+/** Fixed cell size — all wallpapers render at the same visual size. */
+export const CELL_W = 160
+export const CELL_H = 176
+/** Extra cells rendered outside the viewport while panning. */
+export const GRID_PAD = 3
 
 export const wallpapers = catalog as Wallpaper[]
 
-/** Scatter items across a large virtual canvas (thiings-style grid with jitter). */
-export function layoutWallpapers(
-  items: Wallpaper[],
-  opts?: { cols?: number; cellW?: number; cellH?: number; seed?: number }
-): WallpaperItem[] {
-  const cols = opts?.cols ?? 8
-  const cellW = opts?.cellW ?? 200
-  const cellH = opts?.cellH ?? 190
-  const seed = opts?.seed ?? 42
-
-  // Simple deterministic PRNG
-  let s = seed
-  const rand = () => {
-    s = (s * 16807 + 0) % 2147483647
-    return (s - 1) / 2147483646
+/** Build category chips from filenames (`名称[分类].ext`). */
+export function buildCategories(items: Wallpaper[]) {
+  const set = new Set<string>()
+  for (const w of items) {
+    if (w.category) set.add(w.category)
   }
-
-  return items.map((item, i) => {
-    const col = i % cols
-    const row = Math.floor(i / cols)
-    const jitterX = (rand() - 0.5) * 48
-    const jitterY = (rand() - 0.5) * 40
-    const scale = 0.92 + rand() * 0.2
-    const rotation = (rand() - 0.5) * 6
-
-    return {
-      ...item,
-      x: col * cellW + jitterX + 80,
-      y: row * cellH + jitterY + 80,
-      scale,
-      rotation,
-    }
-  })
+  const cats = [...set].sort((a, b) => a.localeCompare(b, 'zh-CN'))
+  return [
+    { id: 'all', label: '全部' },
+    ...cats.map((c) => ({ id: c, label: c })),
+  ]
 }
 
+/** Deterministic wallpaper pick for a grid cell (same cell → same wallpaper). */
+export function wallpaperAt(pool: Wallpaper[], col: number, row: number): Wallpaper {
+  const n = pool.length
+  if (n === 0) {
+    throw new Error('wallpaper pool is empty')
+  }
+  let h = Math.imul(col | 0, 374761393) + Math.imul(row | 0, 668265263)
+  h = Math.imul(h ^ (h >>> 13), 1274126177)
+  const idx = Math.abs(h) % n
+  return pool[idx]!
+}
+
+/**
+ * Build only the grid cells that intersect the current viewport (plus padding).
+ * Panning regenerates cells so the canvas always looks filled.
+ */
+export function visibleWallpapers(
+  pool: Wallpaper[],
+  pan: { x: number; y: number; scale: number },
+  viewport: { width: number; height: number }
+): WallpaperItem[] {
+  if (pool.length === 0 || viewport.width <= 0 || viewport.height <= 0) {
+    return []
+  }
+
+  const { x: px, y: py, scale } = pan
+  const left = -px / scale
+  const top = -py / scale
+  const right = (viewport.width - px) / scale
+  const bottom = (viewport.height - py) / scale
+
+  const col0 = Math.floor(left / CELL_W) - GRID_PAD
+  const row0 = Math.floor(top / CELL_H) - GRID_PAD
+  const col1 = Math.ceil(right / CELL_W) + GRID_PAD
+  const row1 = Math.ceil(bottom / CELL_H) + GRID_PAD
+
+  const maxCols = 48
+  const maxRows = 36
+  const cols = Math.min(col1 - col0, maxCols)
+  const rows = Math.min(row1 - row0, maxRows)
+  const startCol = col0 + Math.floor((col1 - col0 - cols) / 2)
+  const startRow = row0 + Math.floor((row1 - row0 - rows) / 2)
+
+  const items: WallpaperItem[] = []
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const col = startCol + c
+      const row = startRow + r
+      const wp = wallpaperAt(pool, col, row)
+      items.push({
+        ...wp,
+        key: `${col}:${row}:${wp.id}`,
+        col,
+        row,
+        x: col * CELL_W,
+        y: row * CELL_H,
+      })
+    }
+  }
+  return items
+}
+
+/** Encode path segments so filenames like `name[分类].png` work in URLs. */
 export function wallpaperUrl(file: string): string {
   const base = import.meta.env.BASE_URL || '/'
   const normalized = base.endsWith('/') ? base : `${base}/`
-  return `${normalized}${file.replace(/^\//, '')}`
+  const path = file
+    .replace(/^\//, '')
+    .split('/')
+    .map((seg) => encodeURIComponent(seg))
+    .join('/')
+  return `${normalized}${path}`
 }

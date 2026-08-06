@@ -7,101 +7,141 @@ export type PanState = {
 }
 
 type Options = {
-  minScale?: number
-  maxScale?: number
   initial?: Partial<PanState>
+  /** Movement (px) before a press counts as pan, not click. */
+  dragThreshold?: number
 }
 
 /**
- * Click-drag pan + pinch/wheel zoom for an infinite canvas.
- * Mirrors the interaction model of sites like thiings.co.
+ * Drag to pan + wheel to scroll (not zoom).
+ * Click is preserved: pan only starts after the drag threshold.
  */
 export function usePanCanvas(opts: Options = {}) {
-  const minScale = opts.minScale ?? 0.35
-  const maxScale = opts.maxScale ?? 2.2
+  const threshold = opts.dragThreshold ?? 6
   const [pan, setPan] = useState<PanState>({
     x: opts.initial?.x ?? 0,
     y: opts.initial?.y ?? 0,
     scale: opts.initial?.scale ?? 1,
   })
 
-  const dragging = useRef(false)
-  const last = useRef({ x: 0, y: 0 })
+  const pressing = useRef(false)
+  const panning = useRef(false)
   const moved = useRef(false)
-  const panRef = useRef(pan)
-  panRef.current = pan
+  const origin = useRef({ x: 0, y: 0 })
+  const last = useRef({ x: 0, y: 0 })
+  const pointerId = useRef<number | null>(null)
 
   const onPointerDown = useCallback((e: React.PointerEvent) => {
-    // Only primary button / touch; ignore UI chrome
     if (e.button !== 0 && e.pointerType === 'mouse') return
     const t = e.target as HTMLElement
     if (t.closest('.topbar, .footer, .modal-backdrop, .guide-backdrop, .btn, .chip')) {
       return
     }
-    dragging.current = true
+    // Don't capture yet — wait until real drag so clicks still work on cards
+    pressing.current = true
+    panning.current = false
     moved.current = false
+    pointerId.current = e.pointerId
+    origin.current = { x: e.clientX, y: e.clientY }
     last.current = { x: e.clientX, y: e.clientY }
-    ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
   }, [])
 
-  const onPointerMove = useCallback((e: React.PointerEvent) => {
-    if (!dragging.current) return
-    const dx = e.clientX - last.current.x
-    const dy = e.clientY - last.current.y
-    if (Math.abs(dx) > 2 || Math.abs(dy) > 2) moved.current = true
-    last.current = { x: e.clientX, y: e.clientY }
-    setPan((p) => ({ ...p, x: p.x + dx, y: p.y + dy }))
-  }, [])
+  const onPointerMove = useCallback(
+    (e: React.PointerEvent) => {
+      if (!pressing.current) return
 
-  const onPointerUp = useCallback(() => {
-    dragging.current = false
-  }, [])
+      const dxFromOrigin = e.clientX - origin.current.x
+      const dyFromOrigin = e.clientY - origin.current.y
+      const dist = Math.hypot(dxFromOrigin, dyFromOrigin)
 
-  const didDrag = useCallback(() => moved.current, [])
-
-  const zoomAt = useCallback(
-    (clientX: number, clientY: number, factor: number, rect: DOMRect) => {
-      setPan((p) => {
-        const next = Math.min(maxScale, Math.max(minScale, p.scale * factor))
-        if (next === p.scale) return p
-        // Keep point under cursor stable
-        const ox = clientX - rect.left
-        const oy = clientY - rect.top
-        const wx = (ox - p.x) / p.scale
-        const wy = (oy - p.y) / p.scale
-        return {
-          scale: next,
-          x: ox - wx * next,
-          y: oy - wy * next,
+      if (!panning.current) {
+        if (dist < threshold) return
+        // Crossed threshold → start pan, capture for reliable tracking
+        panning.current = true
+        moved.current = true
+        try {
+          ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+        } catch {
+          /* ignore */
         }
-      })
+      }
+
+      const dx = e.clientX - last.current.x
+      const dy = e.clientY - last.current.y
+      last.current = { x: e.clientX, y: e.clientY }
+      setPan((p) => ({ ...p, x: p.x + dx, y: p.y + dy }))
     },
-    [minScale, maxScale]
+    [threshold]
   )
 
-  // Wheel zoom (bind on container)
+  const endPress = useCallback((e?: React.PointerEvent) => {
+    if (
+      e &&
+      panning.current &&
+      pointerId.current != null &&
+      (e.currentTarget as HTMLElement).hasPointerCapture?.(pointerId.current)
+    ) {
+      try {
+        ;(e.currentTarget as HTMLElement).releasePointerCapture(pointerId.current)
+      } catch {
+        /* ignore */
+      }
+    }
+    pressing.current = false
+    panning.current = false
+    pointerId.current = null
+  }, [])
+
+  const onPointerUp = useCallback(
+    (e: React.PointerEvent) => {
+      endPress(e)
+    },
+    [endPress]
+  )
+
+  const onPointerCancel = useCallback(
+    (e: React.PointerEvent) => {
+      moved.current = true // cancel pending click
+      endPress(e)
+    },
+    [endPress]
+  )
+
+  /** True if the last gesture was a pan (click handlers should no-op). */
+  const didDrag = useCallback(() => moved.current, [])
+
+  // Wheel = scroll pan
   useEffect(() => {
     const el = document.getElementById('infinite-canvas-root')
     if (!el) return
 
     const onWheel = (e: WheelEvent) => {
       e.preventDefault()
-      const rect = el.getBoundingClientRect()
-      const factor = e.deltaY > 0 ? 0.92 : 1.08
-      zoomAt(e.clientX, e.clientY, factor, rect)
+
+      let { deltaX, deltaY } = e
+      if (e.deltaMode === 1) {
+        deltaX *= 16
+        deltaY *= 16
+      } else if (e.deltaMode === 2) {
+        deltaX *= el.clientWidth
+        deltaY *= el.clientHeight
+      }
+
+      if (e.shiftKey && deltaX === 0) {
+        deltaX = deltaY
+        deltaY = 0
+      }
+
+      setPan((p) => ({
+        ...p,
+        x: p.x - deltaX,
+        y: p.y - deltaY,
+      }))
     }
 
     el.addEventListener('wheel', onWheel, { passive: false })
     return () => el.removeEventListener('wheel', onWheel)
-  }, [zoomAt])
-
-  const reset = useCallback(() => {
-    setPan({
-      x: opts.initial?.x ?? 0,
-      y: opts.initial?.y ?? 0,
-      scale: opts.initial?.scale ?? 1,
-    })
-  }, [opts.initial?.x, opts.initial?.y, opts.initial?.scale])
+  }, [])
 
   return {
     pan,
@@ -109,8 +149,7 @@ export function usePanCanvas(opts: Options = {}) {
     onPointerDown,
     onPointerMove,
     onPointerUp,
+    onPointerCancel,
     didDrag,
-    reset,
-    zoomAt,
   }
 }

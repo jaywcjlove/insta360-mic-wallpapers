@@ -97,6 +97,17 @@ export function GuidePanel({ open, onClose }: Props) {
               <li>进入「自定义壁纸」，从相册上传图片</li>
             </ol>
           </section>
+
+          <section>
+            <h3>贡献壁纸命名</h3>
+            <p>
+              将图片放入 <code>public/wallpapers/</code>，文件名格式：
+            </p>
+            <p>
+              <code>名称[分类].png</code>
+            </p>
+            <p>例如 <code>bauhaus-2[图案].png</code> → 名称「bauhaus 2」、分类「图案」。</p>
+          </section>
         </div>
       </aside>
     </div>

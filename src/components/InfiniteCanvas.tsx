@@ -1,40 +1,70 @@
-import { useEffect, useMemo } from 'react'
+import { useCallback, useLayoutEffect, useMemo, useState } from 'react'
 import type { Wallpaper, WallpaperItem } from '../data/wallpapers'
-import { layoutWallpapers } from '../data/wallpapers'
+import { CELL_H, CELL_W, visibleWallpapers } from '../data/wallpapers'
 import { usePanCanvas } from '../hooks/usePanCanvas'
 import { WallpaperCard } from './WallpaperCard'
 
 type Props = {
   wallpapers: Wallpaper[]
   onSelect: (item: WallpaperItem) => void
-  onRegisterReset?: (reset: () => void) => void
 }
 
-export function InfiniteCanvas({ wallpapers, onSelect, onRegisterReset }: Props) {
-  // Center initial view roughly on the first few cards
-  const initial = useMemo(
-    () => ({
-      x: typeof window !== 'undefined' ? window.innerWidth * 0.15 : 120,
-      y: typeof window !== 'undefined' ? window.innerHeight * 0.18 : 100,
+function useViewportSize(rootId: string) {
+  const [size, setSize] = useState(() => ({
+    width: typeof window !== 'undefined' ? window.innerWidth : 1200,
+    height: typeof window !== 'undefined' ? window.innerHeight : 800,
+  }))
+
+  useLayoutEffect(() => {
+    const el = document.getElementById(rootId)
+    if (!el) return
+
+    const update = () => {
+      setSize({ width: el.clientWidth, height: el.clientHeight })
+    }
+    update()
+
+    const ro = new ResizeObserver(update)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [rootId])
+
+  return size
+}
+
+export function InfiniteCanvas({ wallpapers, onSelect }: Props) {
+  const initial = useMemo(() => {
+    const w = typeof window !== 'undefined' ? window.innerWidth : 1200
+    const h = typeof window !== 'undefined' ? window.innerHeight : 800
+    return {
+      x: w * 0.5 - CELL_W * 0.5,
+      y: h * 0.45 - CELL_H * 0.5,
       scale: 1,
-    }),
-    []
+    }
+  }, [])
+
+  const {
+    pan,
+    onPointerDown,
+    onPointerMove,
+    onPointerUp,
+    onPointerCancel,
+    didDrag,
+  } = usePanCanvas({ initial })
+
+  const viewport = useViewportSize('infinite-canvas-root')
+
+  const items = useMemo(
+    () => visibleWallpapers(wallpapers, pan, viewport),
+    [wallpapers, pan, viewport]
   )
 
-  const { pan, onPointerDown, onPointerMove, onPointerUp, didDrag, reset } =
-    usePanCanvas({ initial, minScale: 0.4, maxScale: 2 })
-
-  useEffect(() => {
-    onRegisterReset?.(reset)
-  }, [reset, onRegisterReset])
-
-  const items = useMemo(() => layoutWallpapers(wallpapers), [wallpapers])
-
-  const handleSelect = (item: WallpaperItem) => {
-    // Ignore click if user was panning
-    if (didDrag()) return
-    onSelect(item)
-  }
+  const handleSelect = useCallback(
+    (item: WallpaperItem) => {
+      onSelect(item)
+    },
+    [onSelect]
+  )
 
   return (
     <div
@@ -43,7 +73,7 @@ export function InfiniteCanvas({ wallpapers, onSelect, onRegisterReset }: Props)
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
-      onPointerCancel={onPointerUp}
+      onPointerCancel={onPointerCancel}
     >
       <div className="canvas-grid" aria-hidden="true" />
 
@@ -54,12 +84,17 @@ export function InfiniteCanvas({ wallpapers, onSelect, onRegisterReset }: Props)
         }}
       >
         {items.map((item) => (
-          <WallpaperCard key={item.id} item={item} onSelect={handleSelect} />
+          <WallpaperCard
+            key={item.key}
+            item={item}
+            onSelect={handleSelect}
+            didDrag={didDrag}
+          />
         ))}
       </div>
 
       <div className="canvas-hint" aria-hidden="true">
-        拖拽移动画布 · 滚轮缩放 · 点击壁纸下载
+        拖拽或滚轮移动 · 点击壁纸下载
       </div>
     </div>
   )

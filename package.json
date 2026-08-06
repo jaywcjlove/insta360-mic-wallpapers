@@ -5,7 +5,6 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "generate": "node scripts/generate-wallpapers.mjs",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
@@ -23,7 +22,6 @@
     "@vitejs/plugin-react": "^6.0.4",
     "gh-pages": "^6.3.0",
     "oxlint": "^1.75.0",
-    "sharp": "^0.35.3",
     "typescript": "~6.0.2",
     "vite": "^8.2.0"
   }

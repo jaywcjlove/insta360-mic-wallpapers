@@ -1,10 +1,10 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Header } from './components/Header'
 import { InfiniteCanvas } from './components/InfiniteCanvas'
 import { GuidePanel } from './components/GuidePanel'
 import { WallpaperModal } from './components/WallpaperModal'
 import {
-  CATEGORIES,
+  buildCategories,
   wallpapers as allWallpapers,
   type WallpaperItem,
 } from './data/wallpapers'
@@ -14,16 +14,13 @@ function App() {
   const [category, setCategory] = useState('all')
   const [selected, setSelected] = useState<WallpaperItem | null>(null)
   const [guideOpen, setGuideOpen] = useState(false)
-  const resetViewRef = useRef<(() => void) | null>(null)
+
+  const categories = useMemo(() => buildCategories(allWallpapers), [])
 
   const filtered = useMemo(() => {
     if (category === 'all') return allWallpapers
     return allWallpapers.filter((w) => w.category === category)
   }, [category])
-
-  const registerReset = useCallback((fn: () => void) => {
-    resetViewRef.current = fn
-  }, [])
 
   return (
     <div className="app">
@@ -31,16 +28,11 @@ function App() {
         count={filtered.length}
         category={category}
         onCategory={setCategory}
-        categories={CATEGORIES}
+        categories={categories}
         onOpenGuide={() => setGuideOpen(true)}
-        onResetView={() => resetViewRef.current?.()}
       />
 
-      <InfiniteCanvas
-        wallpapers={filtered}
-        onSelect={setSelected}
-        onRegisterReset={registerReset}
-      />
+      <InfiniteCanvas wallpapers={filtered} onSelect={setSelected} />
 
       <WallpaperModal wallpaper={selected} onClose={() => setSelected(null)} />
       <GuidePanel open={guideOpen} onClose={() => setGuideOpen(false)} />

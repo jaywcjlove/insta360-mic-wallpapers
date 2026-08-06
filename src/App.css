@@ -66,18 +66,52 @@ a {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 0.75rem 1.25rem;
-  background: linear-gradient(
-    180deg,
-    rgba(12, 12, 14, 0.92) 0%,
-    rgba(12, 12, 14, 0.72) 70%,
-    transparent 100%
-  );
-  backdrop-filter: blur(12px);
+  /* Extra bottom space so the fade can stretch softly */
+  padding: 0.85rem 1.25rem 2.75rem;
+  background: transparent;
   pointer-events: none;
 }
 
+/* Soft fade layer: blur + opacity both ease out (no hard edge) */
+.topbar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(12, 12, 14, 0.82) 0%,
+    rgba(12, 12, 14, 0.55) 28%,
+    rgba(12, 12, 14, 0.28) 52%,
+    rgba(12, 12, 14, 0.1) 72%,
+    rgba(12, 12, 14, 0.03) 88%,
+    transparent 100%
+  );
+  backdrop-filter: blur(16px) saturate(1.1);
+  -webkit-backdrop-filter: blur(16px) saturate(1.1);
+  /* Mask the blur itself so it dissolves instead of cutting off */
+  mask-image: linear-gradient(
+    180deg,
+    #000 0%,
+    #000 35%,
+    rgba(0, 0, 0, 0.65) 55%,
+    rgba(0, 0, 0, 0.25) 78%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    #000 0%,
+    #000 35%,
+    rgba(0, 0, 0, 0.65) 55%,
+    rgba(0, 0, 0, 0.25) 78%,
+    transparent 100%
+  );
+}
+
 .topbar > * {
+  position: relative;
+  z-index: 1;
   pointer-events: auto;
 }
 
@@ -262,43 +296,47 @@ a {
   white-space: nowrap;
 }
 
-/* ── Wallpaper cards ────────────────────────────────── */
+/* ── Wallpaper cards (uniform size on infinite grid) ── */
 .wp-card {
   position: absolute;
   width: 148px;
+  height: 172px;
   padding: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.45rem;
-  transform-origin: center center;
-  transition: transform 0.2s ease, filter 0.2s;
+  gap: 0.4rem;
   cursor: pointer;
   background: transparent;
+  /* Avoid layout thrash while virtualizing cells */
+  contain: layout style;
+  /* Keep above empty canvas so clicks hit the card reliably */
+  z-index: 1;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
 }
 
 .wp-card:hover {
   z-index: 5;
-  filter: brightness(1.08);
 }
 
 .wp-card:hover .wp-card-ring {
   box-shadow:
-    0 0 0 2px rgba(255, 255, 255, 0.35),
-    0 16px 40px rgba(0, 0, 0, 0.55);
-  transform: translateY(-4px) scale(1.04);
+    0 0 0 2px rgba(255, 255, 255, 0.4),
+    0 14px 36px rgba(0, 0, 0, 0.55);
+  transform: translateY(-3px);
 }
 
 .wp-card-ring {
-  width: 132px;
-  height: 132px;
+  width: 140px;
+  height: 140px;
+  flex-shrink: 0;
   border-radius: 50%;
   overflow: hidden;
   background: #111;
   border: 3px solid rgba(255, 255, 255, 0.12);
   box-shadow: var(--shadow);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  /* Device-like circular crop preview */
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
   position: relative;
 }
 
@@ -319,6 +357,7 @@ a {
   text-overflow: ellipsis;
   white-space: nowrap;
   text-align: center;
+  line-height: 1.2;
 }
 
 .wp-card:hover .wp-card-title {
@@ -330,7 +369,7 @@ a {
 .guide-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 50;
+  z-index: 100;
   background: rgba(0, 0, 0, 0.65);
   backdrop-filter: blur(6px);
   display: flex;
@@ -338,6 +377,10 @@ a {
   justify-content: center;
   padding: 1rem;
   animation: fadeIn 0.15s ease;
+  /* Modal must receive clicks; canvas pan must not steal them */
+  pointer-events: auto;
+  touch-action: auto;
+  cursor: default;
 }
 
 @keyframes fadeIn {
@@ -632,7 +675,7 @@ a {
 @media (max-width: 720px) {
   .topbar {
     flex-wrap: wrap;
-    padding: 0.65rem 0.85rem;
+    padding: 0.65rem 0.85rem 2.25rem;
   }
 
   .category-nav {
