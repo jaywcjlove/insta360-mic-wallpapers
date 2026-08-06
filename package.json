@@ -10,7 +10,7 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist -b gh-pages -t true"
+    "deploy": "gh-pages -d dist -b gh-pages -t --nojekyll"
   },
   "dependencies": {
     "react": "^19.2.8",
