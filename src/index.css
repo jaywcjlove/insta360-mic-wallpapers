@@ -1,0 +1,9 @@
+/* Global styles are primarily in App.css; keep minimal here. */
+:root {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
