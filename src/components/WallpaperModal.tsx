@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react'
 import type { Wallpaper } from '../data/wallpapers'
 import { wallpaperUrl } from '../data/wallpapers'
+import micpro from '../data/micpro.png'
 
 type Props = {
   wallpaper: Wallpaper | null
@@ -81,12 +82,8 @@ export function WallpaperModal({ wallpaper, onClose }: Props) {
 
         <div className="modal-preview">
           <div className="device-frame">
-            <img src={url} alt={wallpaper.title} width={240} height={208} />
-            <div className="device-buttons" aria-hidden="true">
-              <span />
-              <span />
-              <span />
-            </div>
+            <img src={url} className="device-wallpaper" alt={wallpaper.title} />
+            <img src={micpro} className="device-buttons" alt="" />
           </div>
         </div>
 

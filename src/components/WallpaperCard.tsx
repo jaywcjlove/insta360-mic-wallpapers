@@ -1,5 +1,6 @@
 import type { WallpaperItem } from '../data/wallpapers'
 import { wallpaperUrl } from '../data/wallpapers'
+import micpro from '../data/micpro.png'
 
 type Props = {
   item: WallpaperItem
@@ -41,10 +42,12 @@ export function WallpaperCard({ item, onSelect, didDrag }: Props) {
           alt={item.title}
           width={item.width}
           height={item.height}
+          className="wallpaper"
           draggable={false}
           loading="lazy"
           decoding="async"
         />
+        <img src={micpro} className="device" alt="" />
       </div>
       <span className="wp-card-title">{item.title}</span>
     </div>
