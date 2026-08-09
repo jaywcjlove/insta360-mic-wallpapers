@@ -60,7 +60,7 @@ npm run build      # 输出到 dist/
 npm run deploy     # 推送到 gh-pages 分支
 ```
 
-`vite.config.ts` 中 `base` 为 `/insta360-mic-wallpapers/`，与仓库名一致。
+`vite.config.ts` 中 `base` 为 `./`，构建产物使用相对资源路径。
 
 ## 如何把壁纸装到 Mic Pro
 
