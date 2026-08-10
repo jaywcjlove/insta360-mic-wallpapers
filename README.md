@@ -1,5 +1,7 @@
 # Insta360 Mic Pro 水墨屏壁纸
 
+![](https://github.com/user-attachments/assets/3d2d1025-1a41-4479-a52a-84552f945040)
+
 面向 [Insta360 Mic Pro](https://www.insta360.com/product/insta360-mic-pro) 无线麦克风 **1.22″ 6 色电子墨水屏** 的壁纸下载站。
 
 在线预览：https://jaywcjlove.github.io/insta360-mic-wallpapers/
