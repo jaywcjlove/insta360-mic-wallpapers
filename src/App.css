@@ -207,7 +207,7 @@ a {
   justify-content: center;
   gap: 0.4rem;
   padding: 0.6rem 1.1rem;
-  border-radius: 10px;
+  border-radius: 999px;
   font-size: 0.9rem;
   font-weight: 600;
   transition: transform 0.12s, background 0.15s, border-color 0.15s;
