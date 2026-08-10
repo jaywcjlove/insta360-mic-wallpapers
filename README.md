@@ -1,75 +1,81 @@
-# Insta360 Mic Pro 水墨屏壁纸
+Insta360 Mic Pro E-Ink Screen Wallpapers
+===
+
+[![Chinese](https://jaywcjlove.github.io/sb/lang/chinese.svg)](./README-zh.md)
+[![Buy me a coffee](https://img.shields.io/badge/Buy_Me_a_Coffee-ffdd00?logo=buy-me-a-coffee&logoColor=black)](https://jaywcjlove.github.io/#/sponsor)
+[![Follow On X](https://img.shields.io/badge/Follow%20on%20X-333333?logo=x&logoColor=white)](https://x.com/jaywcjlove)
+
 
 ![](https://github.com/user-attachments/assets/3d2d1025-1a41-4479-a52a-84552f945040)
 
-面向 [Insta360 Mic Pro](https://www.insta360.com/product/insta360-mic-pro) 无线麦克风 **1.22″ 6 色电子墨水屏** 的壁纸下载站。
+A wallpaper download site for the [Insta360 Mic Pro](https://www.insta360.com/product/insta360-mic-pro) wireless microphone with a **1.22-inch 6-color e-ink display**.
 
-在线预览：https://jaywcjlove.github.io/insta360-mic-wallpapers/
+Live preview: https://jaywcjlove.github.io/insta360-mic-wallpapers/
 
-## 功能
+## Features
 
-- **无边际画布**：壁纸铺满可拖拽 / 滚轮滚动的画布
-- **点击下载** PNG（240×208、6 色墨水优化）
-- **设计指南**：硬件参数、构图与用色提醒
+- **Infinite canvas**: wallpapers fill a draggable / scrollable canvas
+- **Click to download** PNG files (240x208, optimized for 6-color e-ink)
+- **Design guide**: hardware specs, composition, and color usage tips
 
-## 添加壁纸
+## Add Wallpapers
 
-把图片放进 `public/wallpapers/`，按文件名自动解析 **名称** 与 **分类**：
+Put images into `public/wallpapers/`. The app automatically parses the **name** and **category** from the filename:
 
 ```
-名称[分类].png
+name[category].png
 ```
 
-示例：
+Examples:
 
-| 文件名 | 显示名称 | 分类 |
+| Filename | Display Name | Category |
 |--------|----------|------|
-| `bauhaus-2[图案].png` | bauhaus 2 | 图案 |
-| `我的Logo[头像].png` | 我的Logo | 头像 |
-| `plain.png` | plain | 其他 |
+| `bauhaus-2[Pattern].png` | bauhaus 2 | Pattern |
+| `MyLogo[Avatar].png` | MyLogo | Avatar |
+| `plain.png` | plain | Other |
 
-支持扩展名：`png` / `jpg`。推荐尺寸 **240×208**。
+Supported extensions: `png` / `jpg`. Recommended size: **240x208**.
 
-开发时新增/删除文件后会自动刷新列表，无需手写 JSON。
+When you add or remove files during development, the list refreshes automatically. No manual JSON is needed.
 
-## 屏幕规格
+## Screen Specifications
 
-| 项目 | 参数 |
+| Item | Spec |
 |------|------|
-| 屏幕 | 1.22 英寸 6 色电子墨水（黑、白、红、黄、蓝、绿） |
-| 分辨率 | 240 × 208 |
-| 形态 | 圆形可视区，底部为物理按键图标区 |
-| 格式 | JPG / PNG |
+| Display | 1.22-inch 6-color e-ink (black, white, red, yellow, blue, green) |
+| Resolution | 240 x 208 |
+| Shape | Circular visible area with a physical button icon area at the bottom |
+| Format | JPG / PNG |
 
-### 设计注意
+### Design Notes
 
-- 仅 6 种固定墨水色，无真实渐变；复杂照片会失真
-- 高对比度 Logo、简约图形效果最好
-- **关键内容勿放最底部**（按键标识遮挡）
-- 墨水屏有残影，避免大面积纯色长期常驻
+- Only 6 fixed ink colors are available, with no true gradients; complex photos may lose detail.
+- High-contrast logos and simple graphics work best.
+- **Do not place key content at the bottom** (it may be blocked by button indicators).
+- E-ink ghosting can occur, so avoid leaving large solid-color areas on screen for long periods.
 
-## 本地开发
+## Local Development
 
 ```bash
 npm install
 npm run dev
 ```
 
-## 构建与发布
+## Build and Deploy
 
 ```bash
-npm run build      # 输出到 dist/
-npm run deploy     # 推送到 gh-pages 分支
+npm run build      # output to dist/
+npm run deploy     # push to gh-pages branch
 ```
 
-`vite.config.ts` 中 `base` 为 `./`，构建产物使用相对资源路径。
+In `vite.config.ts`, `base` is set to `./`, so the build output uses relative asset paths.
 
-## 如何把壁纸装到 Mic Pro
+## How to Install Wallpapers on Mic Pro
 
-1. 下载本站 PNG  
-2. 用 Insta360 App 连接发射器  
-3. 进入 **自定义壁纸**，从相册上传  
+1. Download a PNG from this site.
+2. Connect the transmitter using the Insta360 app.
+3. Go to **Custom Wallpaper** and upload from your photo library.
 
 ## License
 
-壁纸与站点代码可自由使用；Insta360 为注册商标，与本站无官方关联。
+Wallpapers and site code are free to use. Insta360 is a registered trademark and this project is not officially affiliated.
