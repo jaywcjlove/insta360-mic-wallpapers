@@ -2,6 +2,8 @@ type Props = {
   count: number
   category: string
   onCategory: (id: string) => void
+  query: string
+  onQuery: (value: string) => void
   categories: readonly { id: string; label: string }[]
   onOpenGuide: () => void
 }
@@ -10,6 +12,8 @@ export function Header({
   count,
   category,
   onCategory,
+  query,
+  onQuery,
   categories,
   onOpenGuide,
 }: Props) {
@@ -27,6 +31,49 @@ export function Header({
           <p className="tagline">Insta360 水墨屏壁纸 · {count} 张</p>
         </div>
       </div>
+
+      <label className="search-field">
+        <svg
+          viewBox="0 0 24 24"
+          width="1em"
+          height="1em"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <circle cx="11" cy="11" r="7" />
+          <path d="M20 20l-3-3" />
+        </svg>
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => onQuery(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape' && query) {
+              e.preventDefault()
+              onQuery('')
+            }
+          }}
+          placeholder="搜索壁纸"
+          aria-label="搜索壁纸"
+          autoComplete="off"
+          spellCheck={false}
+          enterKeyHint="search"
+        />
+        {query ? (
+          <button
+            type="button"
+            className="search-clear"
+            onClick={() => onQuery('')}
+            aria-label="清除搜索"
+          >
+            ×
+          </button>
+        ) : null}
+      </label>
 
       <nav className="category-nav" aria-label="分类">
         {categories.map((c) => (

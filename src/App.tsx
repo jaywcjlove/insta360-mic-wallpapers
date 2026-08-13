@@ -5,6 +5,7 @@ import { GuidePanel } from './components/GuidePanel'
 import { WallpaperModal } from './components/WallpaperModal'
 import {
   buildCategories,
+  filterWallpapers,
   wallpapers as allWallpapers,
   type WallpaperItem,
 } from './data/wallpapers'
@@ -12,15 +13,16 @@ import './App.css'
 
 function App() {
   const [category, setCategory] = useState('all')
+  const [query, setQuery] = useState('')
   const [selected, setSelected] = useState<WallpaperItem | null>(null)
   const [guideOpen, setGuideOpen] = useState(false)
 
   const categories = useMemo(() => buildCategories(allWallpapers), [])
 
-  const filtered = useMemo(() => {
-    if (category === 'all') return allWallpapers
-    return allWallpapers.filter((w) => w.category === category)
-  }, [category])
+  const filtered = useMemo(
+    () => filterWallpapers(allWallpapers, category, query),
+    [category, query]
+  )
 
   return (
     <div className="app">
@@ -28,6 +30,8 @@ function App() {
         count={filtered.length}
         category={category}
         onCategory={setCategory}
+        query={query}
+        onQuery={setQuery}
         categories={categories}
         onOpenGuide={() => setGuideOpen(true)}
       />

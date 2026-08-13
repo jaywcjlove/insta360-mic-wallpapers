@@ -93,9 +93,15 @@ export function InfiniteCanvas({ wallpapers, onSelect }: Props) {
         ))}
       </div>
 
-      <div className="canvas-hint" aria-hidden="true">
-        拖拽或滚轮移动 · 点击壁纸下载
-      </div>
+      {wallpapers.length === 0 ? (
+        <div className="canvas-empty" role="status">
+          没有找到匹配的壁纸
+        </div>
+      ) : (
+        <div className="canvas-hint" aria-hidden="true">
+          拖拽或滚轮移动 · 点击壁纸下载
+        </div>
+      )}
     </div>
   )
 }

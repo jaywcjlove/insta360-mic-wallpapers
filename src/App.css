@@ -164,6 +164,72 @@ a {
   background: var(--green);
 }
 
+.search-field {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+  width: 200px;
+  height: 34px;
+  padding: 0 0.65rem 0 0.75rem;
+  border-radius: 999px;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border);
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.search-field:focus-within {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.search-field svg {
+  flex-shrink: 0;
+  font-size: 0.95rem;
+}
+
+.search-field input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.8rem;
+  outline: none;
+}
+
+.search-field input::placeholder {
+  color: var(--text-muted);
+}
+
+.search-field input[type='search']::-webkit-search-decoration,
+.search-field input[type='search']::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+}
+
+.search-clear {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-clear:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.12);
+}
+
 .category-nav {
   display: flex;
   flex-wrap: wrap;
@@ -288,6 +354,22 @@ a {
   padding: 0.4rem 0.9rem;
   border-radius: 999px;
   font-size: 0.75rem;
+  color: var(--text-muted);
+  background: rgba(12, 12, 14, 0.7);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(8px);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.canvas-empty {
+  position: absolute;
+  top: 46%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 0.7rem 1.15rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
   color: var(--text-muted);
   background: rgba(12, 12, 14, 0.7);
   border: 1px solid var(--border);
@@ -679,11 +761,25 @@ a {
 @media (max-width: 720px) {
   .topbar {
     flex-wrap: wrap;
-    padding: 0.65rem 0.85rem 2.25rem;
+    align-items: center;
+    row-gap: 0.55rem;
+    padding: 0.65rem 0.85rem 3rem;
+  }
+
+  .search-field {
+    order: 3;
+    flex: 0 0 100%;
+    width: 100%;
+  }
+
+  .topbar-actions {
+    order: 2;
+    margin-left: auto;
   }
 
   .category-nav {
-    order: 3;
+    order: 4;
+    flex: 0 0 100%;
     width: 100%;
     justify-content: flex-start;
     overflow-x: auto;
@@ -694,10 +790,6 @@ a {
 
   .chip {
     flex-shrink: 0;
-  }
-
-  .topbar-actions {
-    margin-left: auto;
   }
 
   .canvas-hint {
